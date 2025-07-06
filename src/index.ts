@@ -1,43 +1,36 @@
 import express from 'express'
+import cors from 'cors'
 import { fileURLToPath } from 'url'
-import path, { dirname } from 'path'
-import { middlewareLogResponses, middlewareMetricsInc } from './app/middleware/index.js'
+import { dirname } from 'path'
+import { middlewareLogResponses, middlewareMetricsInc, middlewareHandleError } from './app/middleware/index.js'
+import { handlerReadiness, handlerMetrics, handlerReset, handlerChirpsValidate } from './app/api/index.js'
+import postgres from 'postgres'
 import { config } from './config.js'
-
+import { drizzle } from "drizzle-orm/postgres-js";
+import { migrate } from "drizzle-orm/postgres-js/migrator";
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
 const app = express()
 const PORT = 8080
 
+const migrationsClient = postgres(config.db.url, { max: 1 })
+await migrate(drizzle(migrationsClient), config.db.migrationConfig)
 
 app.use(middlewareLogResponses)
+app.use(cors())
+app.use(express.json())
+app.use("/app", middlewareMetricsInc, express.static("./src/app"));
 
-// —— 1) Readiness endpoint via GET ——
-app.get("/api/healthz", (req, res) => {
-    res
-        .set("Content-Type", "text/plain; charset=utf-8")
-        .send("OK");
-});
+app.get("/api/healthz", handlerReadiness);
+app.get("/admin/metrics", handlerMetrics);
+app.post("/admin/reset", handlerReset);
+app.post("/api/validate_chirp", handlerChirpsValidate);
+app.use(middlewareHandleError)
 
-app.get("/api/metrics", (req, res) => {
-    res.set("Content-Type", "text/plain; charset=utf-8")
-        .send(`Hits: ${config.fileserverHits}`);
-})
-
-app.get("/api/reset", (req, res) => {
-    config.fileserverHits = 0;
-    res.set("Content-Type", "text/plain;charset=utf-8")
-        .send("Hits reset to 0")
-})
-
-app.use(
-    "/app",
-    middlewareMetricsInc,
-    express.static("./src/app")
-);
 
 
 app.listen(PORT, () => {
-    console.log(`Server listening on http://localhost:${PORT}`);
-})
+    console.log(`Server is running at http://localhost:${PORT}`);
+});
+
 export default app;
