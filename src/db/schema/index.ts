@@ -1,1 +1,2 @@
-export * from './usersSchema';
+export * from './usersSchema.js';
+export * from './chirpsSchema.js'

@@ -168,3 +168,4 @@ ecosystem.config.js
 uploads/
 static/uploads/
 public/uploads/
+migrations

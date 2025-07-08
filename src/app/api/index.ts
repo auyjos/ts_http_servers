@@ -1,6 +1,5 @@
 export { handlerReadiness } from './readiness.js'
 export { handlerMetrics } from './metrics.js'
 export { handlerReset } from './reset.js'
-export { handlerChirpsValidate } from './chirps.js'
-
-
+export { handlerChirpsValidate, handlerCreateChirp, handlerGetChirps, handlerGetChirp } from './chirps.js'
+export { handlerCreateUser, handlerLogin } from './createUser.js'

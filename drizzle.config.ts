@@ -12,7 +12,7 @@ function envOrThrow(key: string): string {
 }
 
 export default defineConfig({
-  schema: "src/db/schema/*",
+  schema: "dist/src/db/schema/*",
   out: "src/db/migrations",
   dialect: "postgresql",
   dbCredentials: {

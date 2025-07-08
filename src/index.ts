@@ -3,7 +3,7 @@ import cors from 'cors'
 import { fileURLToPath } from 'url'
 import { dirname } from 'path'
 import { middlewareLogResponses, middlewareMetricsInc, middlewareHandleError } from './app/middleware/index.js'
-import { handlerReadiness, handlerMetrics, handlerReset, handlerChirpsValidate } from './app/api/index.js'
+import { handlerReadiness, handlerMetrics, handlerReset, handlerChirpsValidate, handlerCreateUser, handlerCreateChirp, handlerGetChirps, handlerGetChirp, handlerLogin } from './app/api/index.js'
 import postgres from 'postgres'
 import { config } from './config.js'
 import { drizzle } from "drizzle-orm/postgres-js";
@@ -23,8 +23,14 @@ app.use("/app", middlewareMetricsInc, express.static("./src/app"));
 
 app.get("/api/healthz", handlerReadiness);
 app.get("/admin/metrics", handlerMetrics);
+app.get("/api/chirps", handlerGetChirps);
+app.get("/api/chirps/:chirpID", handlerGetChirp);
+
 app.post("/admin/reset", handlerReset);
 app.post("/api/validate_chirp", handlerChirpsValidate);
+app.post("/api/users", handlerCreateUser)
+app.post("/api/chirps", handlerCreateChirp)
+app.post("/api/login", handlerLogin);
 app.use(middlewareHandleError)
 
 

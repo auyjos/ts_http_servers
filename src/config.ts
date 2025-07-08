@@ -20,7 +20,8 @@ export type DBconfig = {
 
 export type APIConfig = {
     fileserverHits: number;
-    db: DBconfig
+    db: DBconfig;
+    platform: string;
 }
 
 export const config: APIConfig = {
@@ -28,6 +29,7 @@ export const config: APIConfig = {
     db: {
         url: envOrThrow('DB_URL'),
         migrationConfig: migrationConfig
-    }
+    },
+    platform: envOrThrow('PLATFORM')
 }
 
