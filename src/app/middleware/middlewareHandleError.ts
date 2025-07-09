@@ -1,22 +1,25 @@
 
 import type { Request, Response, NextFunction } from "express";
 import { BadRequestError, UnauthorizedError, ForbiddenError, NotFoundError } from "../errors/customErrors.js";
-
-export function middlewareHandleError(err: Error, req: Request, res: Response, next: NextFunction): void {
-
-    console.log(err)
-
-    if (err instanceof BadRequestError ||
-        err instanceof UnauthorizedError ||
-        err instanceof ForbiddenError ||
-        err instanceof NotFoundError) {
-
-        res.status(err.statusCode).json({
-            error: err.message
-        })
+import { respondWithError } from "../api/json.js";
+export function middlewareHandleError(err: any, req: Request, res: Response, next: NextFunction) {
+    // Check if response has already been sent
+    if (res.headersSent) {
+        return next(err);
     }
 
-    res.status(500).json({
-        error: "Something went wrong on our end"
-    })
+    console.error("Error middleware caught:", err);
+
+    if (err instanceof BadRequestError) {
+        respondWithError(res, 400, err.message);
+        return;
+    }
+
+    if (err instanceof UnauthorizedError) {
+        respondWithError(res, 401, err.message);
+        return;
+    }
+
+    // For any other error, return 500
+    respondWithError(res, 500, "Something went wrong on our end");
 }

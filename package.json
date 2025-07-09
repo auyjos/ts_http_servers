@@ -11,7 +11,8 @@
     "dev": "nodemon dist/src/index.js",
     "dev:full": "nodemon --exec \"npx tsc && node dist/src/index.js\" --ext ts",
     "generate": "drizzle-kit generate",
-    "migrate": "drizzle-kit migrate"
+    "migrate": "drizzle-kit migrate",
+    "test": "vitest --run"
   },
   "keywords": [],
   "author": "",
@@ -25,7 +26,8 @@
     "@types/pg": "^8.15.4",
     "drizzle-kit": "^0.31.4",
     "nodemon": "^3.1.10",
-    "typescript": "^5.8.3"
+    "typescript": "^5.8.3",
+    "vitest": "^3.2.4"
   },
   "dependencies": {
     "bcrypt": "^6.0.0",

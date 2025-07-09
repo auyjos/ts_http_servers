@@ -19,13 +19,13 @@ export function validateChirpBody(body: any): string {
 }
 
 export function cleanProfanity(text: string): string {
-    const profaneWords = ["kerfuffle", "sharbert", "fornax"];
-    const words = text.split(" ");
-    const cleanedWords = words.map(word => {
-        if (profaneWords.includes(word.toLowerCase())) {
-            return "****";
-        }
-        return word;
-    });
-    return cleanedWords.join(" ");
+    const badWords = ["kerfuffle", "sharbert", "fornax"];
+    let cleanedText = text;
+
+    for (const word of badWords) {
+        const regex = new RegExp(word, "gi");
+        cleanedText = cleanedText.replace(regex, "****");
+    }
+
+    return cleanedText;
 }

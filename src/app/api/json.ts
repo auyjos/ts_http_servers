@@ -9,8 +9,6 @@ export function respondWithError(res: Response, code: number, message: string) {
 export function respondWithJson(res: Response, code: number, payload: any) {
 
     res.header("Content-Type", "application/json")
-    const body = JSON.stringify(payload)
-    res.status(code).send(body)
-    res.end()
+    res.status(code).json(payload)
 
 }

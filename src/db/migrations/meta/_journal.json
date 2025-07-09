@@ -5,22 +5,8 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1751418223544,
-      "tag": "0000_right_ender_wiggin",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "7",
-      "when": 1751849768289,
-      "tag": "0001_overrated_juggernaut",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "7",
-      "when": 1751860532567,
-      "tag": "0002_wild_guardian",
+      "when": 1752030901375,
+      "tag": "0000_broken_mister_sinister",
       "breakpoints": true
     }
   ]

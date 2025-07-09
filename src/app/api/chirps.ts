@@ -3,6 +3,8 @@ import { respondWithJson, respondWithError } from "./json.js";
 import { BadRequestError } from "../errors/customErrors.js";
 import { validateChirpBody, cleanProfanity } from "../utils/chirpUtils.js";
 import { createChirp, getAllChirps, getChirp } from "../../db/queries/chirps.js";
+import { getBearerToken, validateJWT } from "../utils/auth.js";
+import { config } from "../../config.js";
 export async function handlerChirpsValidate(req: Request, res: Response, next: NextFunction) {
     try {
         const { body } = req.body;
@@ -14,7 +16,7 @@ export async function handlerChirpsValidate(req: Request, res: Response, next: N
         respondWithJson(res, 200, {
             cleanedBody: cleanedBody
         });
-
+        return;
     } catch (error) {
         next(error);
     }
@@ -22,17 +24,25 @@ export async function handlerChirpsValidate(req: Request, res: Response, next: N
 
 
 export async function handlerCreateChirp(req: Request, res: Response, next: NextFunction) {
-
     try {
-        const { body, userId } = req.body
-        // Validate userId
-        if (!userId) {
-            respondWithError(res, 400, "User ID is required");
+        console.log("=== CREATE CHIRP START ===");
+        console.log("Request body:", req.body);
+        // Authenticate the user first
+        const token = getBearerToken(req);
+        console.log("Token extracted successfully");
+        const userId = validateJWT(token, config.jwtSecret);
+        console.log("User ID:", userId);
+
+        const { body } = req.body;
+
+        // Validate body exists
+        if (!body) {
+            respondWithError(res, 400, "Body is required");
             return;
         }
 
-        if (typeof userId !== 'string') {
-            respondWithError(res, 400, "User ID must be a string");
+        if (typeof body !== 'string') {
+            respondWithError(res, 400, "Body must be a string");
             return;
         }
 
@@ -45,19 +55,23 @@ export async function handlerCreateChirp(req: Request, res: Response, next: Next
             body: cleanedBody,
             userId: userId
         });
+        console.log("Chirp created successfully:", newChirp);
 
+        // Return the full chirp object, not just cleanedBody
         respondWithJson(res, 201, {
             id: newChirp.id,
             createdAt: newChirp.createdAt,
             updatedAt: newChirp.updatedAt,
             body: newChirp.body,
             userId: newChirp.userId
-        })
+        });
 
+        return;
     } catch (error) {
-        next(error)
+        console.error("=== CREATE CHIRP ERROR ===");
+        console.error("Error:", error);
+        next(error);
     }
-
 }
 
 export async function handlerGetChirps(req: Request, res: Response, next: NextFunction) {
@@ -74,6 +88,7 @@ export async function handlerGetChirps(req: Request, res: Response, next: NextFu
         }));
 
         respondWithJson(res, 200, formattedChirps);
+        return;
 
     } catch (error) {
         next(error);
@@ -104,7 +119,7 @@ export async function handlerGetChirp(req: Request, res: Response, next: NextFun
             body: chirp.body,
             userId: chirp.userId
         })
-
+        return;
     } catch (error) {
         next(error)
     }
