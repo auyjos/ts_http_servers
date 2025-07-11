@@ -6,12 +6,13 @@ import { middlewareLogResponses, middlewareMetricsInc, middlewareHandleError } f
 import {
     handlerReadiness, handlerMetrics, handlerReset, handlerChirpsValidate,
     handlerCreateUser, handlerCreateChirp, handlerGetChirps,
-    handlerGetChirp, handlerLogin, handlerRefresh, handlerRevoke
+    handlerGetChirp, handlerLogin, handlerRefresh, handlerRevoke, handlerUpdateUser, handlerPolkaWebhook, handlerDeleteChirp
 } from './app/api/index.js'
 import postgres from 'postgres'
 import { config } from './config.js'
 import { drizzle } from "drizzle-orm/postgres-js";
 import { migrate } from "drizzle-orm/postgres-js/migrator";
+
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = dirname(__filename)
 const app = express()
@@ -37,9 +38,11 @@ app.post("/api/chirps", handlerCreateChirp)
 app.post("/api/login", handlerLogin);
 app.post("/api/refresh", handlerRefresh);           // New refresh endpoint
 app.post("/api/revoke", handlerRevoke);
+app.post("/api/polka/webhooks", handlerPolkaWebhook); // Add this new route
+app.put("/api/users", handlerUpdateUser)
+
+app.delete("/api/chirps/:chirpID", handlerDeleteChirp)
 app.use(middlewareHandleError)
-
-
 
 app.listen(PORT, () => {
     console.log(`Server is running at http://localhost:${PORT}`);

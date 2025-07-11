@@ -2,7 +2,7 @@ import type { NextFunction, Request, Response } from "express";
 import { respondWithJson, respondWithError } from "./json.js";
 import { BadRequestError } from "../errors/customErrors.js";
 import { validateChirpBody, cleanProfanity } from "../utils/chirpUtils.js";
-import { createChirp, getAllChirps, getChirp } from "../../db/queries/chirps.js";
+import { createChirp, getAllChirps, getChirp, deleteChirps } from "../../db/queries/chirps.js";
 import { getBearerToken, validateJWT } from "../utils/auth.js";
 import { config } from "../../config.js";
 export async function handlerChirpsValidate(req: Request, res: Response, next: NextFunction) {
@@ -122,5 +122,42 @@ export async function handlerGetChirp(req: Request, res: Response, next: NextFun
         return;
     } catch (error) {
         next(error)
+    }
+}
+
+export async function handlerDeleteChirp(req: Request, res: Response, next: NextFunction) {
+    try {
+        const token = getBearerToken(req)
+        const userId = validateJWT(token, config.jwtSecret)
+        const { chirpID } = req.params
+        if (!chirpID) {
+            respondWithError(res, 400, "Chirp ID is required");
+            return;
+        }
+
+        // First, get the chirp to check if it exists and who owns it
+        const chirp = await getChirp(chirpID);
+
+        if (!chirp) {
+            respondWithError(res, 404, "Chirp not found");
+            return;
+        }
+
+        // Check if the authenticated user is the author of the chirp
+        if (chirp.userId !== userId) {
+            respondWithError(res, 403, "Forbidden");
+            return;
+        }
+
+        // Delete the chirp
+        await deleteChirps(chirpID);
+
+        // Return 204 No Content for successful deletion
+        res.status(204).send();
+        return;
+
+    } catch (error) {
+        console.error("Delete chirp error:", error);
+        next(error);
     }
 }

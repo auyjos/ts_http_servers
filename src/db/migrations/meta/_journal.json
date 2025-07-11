@@ -8,6 +8,13 @@
       "when": 1752030901375,
       "tag": "0000_broken_mister_sinister",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1752203137498,
+      "tag": "0001_warm_beast",
+      "breakpoints": true
     }
   ]
 }

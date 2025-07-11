@@ -1,4 +1,4 @@
-import { PgTable, timestamp, varchar, uuid, text, pgTable } from "drizzle-orm/pg-core";
+import { PgTable, timestamp, varchar, uuid, text, pgTable, boolean } from "drizzle-orm/pg-core";
 import { users } from "./usersSchema.js";
 
 export const chirps = pgTable('chirps', {
@@ -10,6 +10,7 @@ export const chirps = pgTable('chirps', {
         .$onUpdate(() => new Date()),
     body: text("body").notNull(),
     userId: uuid("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+   
 })
 
 export type NewChirp = typeof chirps.$inferInsert;

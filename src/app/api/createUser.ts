@@ -1,8 +1,8 @@
 import type { Request, Response, NextFunction } from "express";
 import { respondWithJson, respondWithError } from "./json.js";
-import { createUser, getUserByEmail } from "../../db/queries/users.js"
-import { checkPasswordHash, hashPassword, makeJWT, makeRefreshToken } from "../utils/auth.js";
-import type { UserResponse } from "../../db/schema/usersSchema.js";
+import { createUser, getUserByEmail, updateUser } from "../../db/queries/users.js"
+import { checkPasswordHash, getBearerToken, hashPassword, makeJWT, makeRefreshToken, validateJWT } from "../utils/auth.js";
+import type { User, UserResponse } from "../../db/schema/usersSchema.js";
 import { config } from "../../config.js";
 import { createRefreshToken } from "../../db/queries/refreshTokens.js";
 
@@ -36,7 +36,8 @@ export async function handlerCreateUser(req: Request, res: Response, next: NextF
             id: newUser.id,
             createdAt: newUser.createdAt,
             updatedAt: newUser.updatedAt,
-            email: newUser.email
+            email: newUser.email,
+            isChirpyRed: newUser.isChirpyRed
         };
 
         respondWithJson(res, 201, userResponse);
@@ -96,13 +97,65 @@ export async function handlerLogin(req: Request, res: Response, next: NextFuncti
             updatedAt: user.updatedAt,
             email: user.email,
             token: accessToken,
-            refreshToken: refreshTokenString
+            refreshToken: refreshTokenString,
+            isChirpyRed: user.isChirpyRed
         };
 
         respondWithJson(res, 200, loginResponse);
 
     } catch (error) {
         console.error("Login error:", error); // Add logging to see the actual error
+        next(error);
+    }
+}
+
+export async function handlerUpdateUser(req: Request, res: Response, next: NextFunction) {
+    try {
+        // Authenticate user
+        let userId: string;
+        try {
+            const token = getBearerToken(req);
+            userId = validateJWT(token, config.jwtSecret);
+        } catch {
+            respondWithError(res, 401, "Invalid or expired token");
+            return;
+        }
+
+        const { email, password } = req.body;
+
+        if (!email || !password) {
+            respondWithError(res, 400, "Email and password are required");
+            return;
+        }
+        if (typeof email !== "string" || typeof password !== "string") {
+            respondWithError(res, 400, "Email and password must be strings");
+            return;
+        }
+
+        // Hash the new password
+        const hashedPassword = await hashPassword(password);
+
+        // Update user in DB
+        const updatedUser = await updateUser(userId, {
+            email,
+            hashedPassword
+        });
+
+        if (!updatedUser) {
+            respondWithError(res, 404, "User not found");
+            return;
+        }
+
+        const userResponse: UserResponse = {
+            id: updatedUser.id,
+            createdAt: updatedUser.createdAt,
+            updatedAt: updatedUser.updatedAt,
+            email: updatedUser.email,
+            isChirpyRed: updatedUser.isChirpyRed
+        }
+        // Respond with updated user (omit password)
+        respondWithJson(res, 200, userResponse);
+    } catch (error) {
         next(error);
     }
 }

@@ -168,4 +168,6 @@ ecosystem.config.js
 uploads/
 static/uploads/
 public/uploads/
-migrations
+# Drizzle snapshots (but keep journal and SQL files)
+src/db/migrations/meta/*.snapshot.json
+src/db/migrations/meta/0001_snapshot.json
